@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -24,7 +25,7 @@ export default function SignInPage() {
     if (user) {
       router.push('/')
     }
-  }, [user, router])
+  }, [user])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,11 +37,14 @@ export default function SignInPage() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values)
-    login(values.username, values.password)
+    try {
+      login(values.username, values.password)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Đã xảy ra lỗi. Vui lòng thử lại.')
+    }
   }
   return (
-    <div className='flex items-center justify-center h-screen'>
+    <div className='flex items-center justify-center h-screen p-4'>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='flex gap-12 items-center w-full flex-col'>
           <strong className='text-2xl text-[#4E3CDB] uppercase'>Chấm công</strong>

@@ -17,18 +17,16 @@ export const login = async (
     expiresAt: string
   }
 }> => {
-  try {
-    const response = await axiosInstance.post('/auth/login', { email, password, deviceInfo })
-    return response.data.data
-  } catch (error) {
-    throw error
-  }
+  const response = await axiosInstance.post('/auth/login', { email, password, deviceInfo })
+  return response.data.data
 }
 export const getCurrentUser = async (): Promise<User> => {
-  try {
-    const response = await axiosInstance.get('/auth/me')
-    return response.data.data
-  } catch (error) {
-    throw error
-  }
+  const response = await axiosInstance.get('/auth/me')
+  return response.data.data
+}
+export const refreshToken = async (): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> => {
+  const response = await axiosInstance.post('/auth/refresh', {
+    refreshToken: localStorage.getItem('refresh-token'),
+  })
+  return response.data.data
 }

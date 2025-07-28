@@ -24,8 +24,8 @@ export default function RootLayout({
       <body className={`${lato.variable} antialiased`} suppressHydrationWarning>
         <AuthProvider>
           <main className='max-w-xl mx-auto relative bg-[#FBFBFB]'>{children}</main>
-          <Toaster />
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   )

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@/models/user'
 import { login as loginService, getCurrentUser as getCurrentUserService } from '@/services/auth'
 import { getDeviceInfo } from '@/utils/deviceDetection'
+import { toast } from 'sonner'
 interface AuthContextType {
   user: User | null
   login: (username: string, password: string) => Promise<void>
@@ -19,20 +20,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false)
 
   const login = async (username: string, password: string) => {
-    setIsLoading(true)
-    const deviceInfo = getDeviceInfo()
-    const loginData = await loginService(username, password, deviceInfo)
-    if (loginData) {
-      localStorage.setItem('access-token', loginData.tokens.accessToken)
-      localStorage.setItem('refresh-token', loginData.tokens.refreshToken)
-      setUser(loginData.user)
+    try {
+      setIsLoading(true)
+      const deviceInfo = getDeviceInfo()
+      const loginData = await loginService(username, password, deviceInfo)
+      if (loginData) {
+        localStorage.setItem('access-token', loginData.tokens.accessToken)
+        localStorage.setItem('refresh-token', loginData.tokens.refreshToken)
+        setUser(loginData.user)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Đăng nhập thất bại. Vui lòng thử lại.')
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   const getCurrentUser = async () => {
-    const accessToken = localStorage.getItem('access-token')
-    if (!accessToken) return
+    const hasToken = localStorage.getItem('access-token') || localStorage.getItem('refresh-token')
+    if (!hasToken) {
+      return
+    }
     const user = await getCurrentUserService()
     if (user) {
       setUser(user)
