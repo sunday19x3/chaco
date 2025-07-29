@@ -71,7 +71,7 @@ export default function AttendanceHistory() {
                   {...props}
                   className={cn(
                     props.className,
-                    'w-full cursor-pointer max-w-10 aspect-square rounded-full grid place-items-center',
+                    'w-full cursor-pointer max-w-10 text-xs aspect-square rounded-full grid place-items-center',
                     props.modifiers.selected && 'border',
                     attendanceHistory?.some((item) =>
                       moment(item.timestamp).startOf('day').isSame(moment(props.day.date).startOf('day'))

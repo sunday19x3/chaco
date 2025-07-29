@@ -31,7 +31,7 @@ export default function WorkingShiftProcessor() {
   const [location, setLocation] = useState<GeolocationPosition | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<{
     employeeId: string
-    currentStatus: 'not_started' | 'in_progress' | 'ended'
+    currentStatus: 'not_started' | 'checked_in' | 'checked_out'
     todayAttendance:
       | {
           totalHours: number
@@ -305,13 +305,13 @@ export default function WorkingShiftProcessor() {
                 disabled={
                   loading ||
                   (attendanceStatus?.currentStatus !== 'not_started' &&
-                    attendanceStatus?.currentStatus !== 'in_progress')
+                    attendanceStatus?.currentStatus !== 'checked_in')
                 }>
                 {loading
                   ? 'Đang xử lý...'
                   : attendanceStatus?.currentStatus === 'not_started'
                   ? 'Vào làm'
-                  : attendanceStatus?.currentStatus === 'in_progress'
+                  : attendanceStatus?.currentStatus === 'checked_in'
                   ? 'Tan làm'
                   : 'Hết ca'}
               </Button>
@@ -322,7 +322,7 @@ export default function WorkingShiftProcessor() {
               <DialogHeader className='hidden'>
                 <DialogTitle>Chụp ảnh chấm công</DialogTitle>
               </DialogHeader>
-              <div className='w-full h-screen flex items-center flex-col text-white pb-6'>
+              <div className='w-full h-[100dvh] flex items-center flex-col text-white pb-6'>
                 <header className='text-white  w-full h-12 flex items-center justify-center relative'>
                   <h1 className=' font-medium'>Chụp ảnh chấm công</h1>
                   <div onClick={() => setOpen(false)} className='absolute left-4 top-1/2 transform -translate-y-1/2'>
@@ -336,9 +336,7 @@ export default function WorkingShiftProcessor() {
                       <div className='flex flex-col items-center justify-center h-full text-red-500'>
                         <X className='w-12 h-12 mb-2' />
                         <p className='text-sm text-center px-4'>{cameraError}</p>
-                        <button onClick={startCamera} className='mt-2 px-4 py-2 bg-blue-500 text-white rounded text-sm'>
-                          Thử lại
-                        </button>
+                        <Button onClick={startCamera}>Thử lại</Button>
                       </div>
                     ) : capturedImage ? (
                       <img src={capturedImage} alt='Captured photo' className='w-full h-full object-cover' />
@@ -368,13 +366,10 @@ export default function WorkingShiftProcessor() {
                         setCapturedImage(null)
                         startCamera()
                       }}
-                      size='sm'
                       variant='outline'>
                       Chụp lại
                     </Button>
-                    <Button onClick={handler} size='sm'>
-                      Xác nhận
-                    </Button>
+                    <Button onClick={handler}>Xác nhận</Button>
                   </div>
                 ) : (
                   <button onClick={capturePhoto} disabled={!isStreaming} className='disabled:opacity-50'>
@@ -399,7 +394,7 @@ export default function WorkingShiftProcessor() {
                 <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-in thành công
               </div>
             )}
-            {attendanceStatus?.currentStatus === 'ended' ? (
+            {attendanceStatus?.currentStatus === 'checked_out' ? (
               <div className='flex items-center gap-2'>
                 <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-out thành công
               </div>

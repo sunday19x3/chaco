@@ -5,7 +5,7 @@ export const getAttendanceStatus = async (
   employeeId: string
 ): Promise<{
   employeeId: string
-  currentStatus: 'not_started' | 'in_progress' | 'ended'
+  currentStatus: 'not_started' | 'checked_in' | 'checked_out'
   todayAttendance: {
     totalHours: number
     workShift: {

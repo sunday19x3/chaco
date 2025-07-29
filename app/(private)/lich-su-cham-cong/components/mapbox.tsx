@@ -13,7 +13,10 @@ const Mapbox = ({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number })
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current as HTMLDivElement,
       center: [lng, lat], // starting position [lng, lat]
-      zoom: zoom || 12, // starting zoom
+      zoom: zoom || 14, // starting zoom
+      touchZoomRotate: false,
+      scrollZoom: false,
+      dragPan: false,
     })
     new mapboxgl.Marker().setLngLat([lng, lat]).addTo(mapRef.current)
   }, [])
