@@ -15,7 +15,9 @@ const Mapbox = ({ lat, lng, zoom }: { lat: number; lng: number; zoom?: number })
       center: [lng, lat], // starting position [lng, lat]
       zoom: zoom || 14, // starting zoom
       touchZoomRotate: false,
-      scrollZoom: false,
+      scrollZoom: {
+        around: 'center',
+      },
       dragPan: false,
     })
     new mapboxgl.Marker().setLngLat([lng, lat]).addTo(mapRef.current)
