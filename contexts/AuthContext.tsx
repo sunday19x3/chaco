@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import useSWR from 'swr'
 import { getWorkingData } from '@/services/attendance'
 import { WorkingData } from '@/models/user'
+import { useRouter } from 'next/navigation'
 interface AuthContextType {
   user: User | null
   login: (username: string, password: string) => Promise<void>
@@ -22,8 +23,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const router = useRouter()
 
-  const { data: workingData } = useSWR('get-working-data', getWorkingData)
+  const { data: workingData } = useSWR({ key: 'get-working-data', user }, ({ user }) =>
+    user ? getWorkingData() : undefined
+  )
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true)
@@ -45,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const getCurrentUser = async () => {
     const hasToken = localStorage.getItem('access-token') || localStorage.getItem('refresh-token')
     if (!hasToken) {
+      router.push('/dang-nhap')
       return
     }
     const user = await getCurrentUserService()
@@ -57,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
     localStorage.removeItem('access-token')
     localStorage.removeItem('refresh-token')
+    router.push('/dang-nhap')
   }
 
   const initialize = async () => {
@@ -64,6 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await getCurrentUser()
     } catch (error) {
       console.error(error)
+      router.push('/dang-nhap')
     } finally {
       setIsInitialized(true)
     }
