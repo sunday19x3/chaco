@@ -1,3 +1,4 @@
+import { WorkingData } from '@/models/user'
 import axiosInstance from './axios'
 
 export const getAttendanceStatus = async (
@@ -16,7 +17,34 @@ export const getAttendanceStatus = async (
   const response = await axiosInstance.get(`/attendance/status/${employeeId}`)
   return response.data.data
 }
-export const getAttendanceHistory = async (employeeId: string, startDate: string, endDate: string) => {
+export const getAttendanceHistory = async (
+  employeeId: string,
+  startDate: string,
+  endDate: string
+): Promise<
+  {
+    id: string
+    employeeId: string
+    checkType: 'checkin' | 'checkout'
+    timestamp: string
+    location: {
+      latitude: number
+      longitude: number
+      accuracy: number
+    }
+    device: {
+      deviceId: string
+      deviceType: 'mobile' | 'tablet' | 'web'
+    }
+    photoUrl?: string
+    status: 'success' | 'failed'
+    isLate: boolean
+    lateMinutes: number
+    isEarlyLeave: boolean
+    earlyLeaveMinutes: number
+    createdAt: string
+  }[]
+> => {
   const response = await axiosInstance.get(`/attendance/history/${employeeId}`, {
     params: {
       startDate,
@@ -24,7 +52,7 @@ export const getAttendanceHistory = async (employeeId: string, startDate: string
       limit: 1000,
     },
   })
-  return response.data.data
+  return response.data.data?.records
 }
 export const checkin = async (
   employeeId: string,
@@ -45,5 +73,30 @@ export const checkin = async (
     },
     device,
   })
+  return response.data.data
+}
+export const checkout = async (
+  employeeId: string,
+  photo: string,
+  location: {
+    latitude: number
+    longitude: number
+    accuracy: number
+  },
+  device: any
+) => {
+  const response = await axiosInstance.post(`/attendance/checkout`, {
+    employeeId,
+    checkType: 'checkout',
+    location,
+    verification: {
+      photo,
+    },
+    device,
+  })
+  return response.data.data
+}
+export const getWorkingData = async (): Promise<WorkingData> => {
+  const response = await axiosInstance.get(`/users/me/enriched-profile`)
   return response.data.data
 }

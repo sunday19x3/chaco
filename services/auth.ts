@@ -2,7 +2,7 @@ import { User } from '@/models/user'
 import axiosInstance from './axios'
 
 export const login = async (
-  email: string,
+  username: string,
   password: string,
   deviceInfo?: any
 ): Promise<{
@@ -17,7 +17,7 @@ export const login = async (
     expiresAt: string
   }
 }> => {
-  const response = await axiosInstance.post('/auth/login', { email, password, deviceInfo })
+  const response = await axiosInstance.post('/auth/login', { employeeId: username, password, deviceInfo })
   return response.data.data
 }
 export const getCurrentUser = async (): Promise<User> => {

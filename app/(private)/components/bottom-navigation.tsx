@@ -7,7 +7,7 @@ export default function BottomNavigation() {
   const pathname = usePathname()
 
   return (
-    <div className='absolute w-full text-sm h-20 bottom-0 left-0 right-0 bg-white border-t border-[#EDEDED] shadow-[0px_-4px_12px_0px_#DFDFDF4D] p-4 grid grid-cols-2 divide-x divide-[#EDEDED]'>
+    <div className='fixed w-full max-w-xl text-sm h-20 bottom-0 left-1/2 -translate-x-1/2 right-0 bg-white border-t border-[#EDEDED] shadow-[0px_-4px_12px_0px_#DFDFDF4D] p-4 grid grid-cols-2 divide-x divide-[#EDEDED]'>
       <Link
         href='/'
         className={`flex items-center justify-center flex-col gap-2 ${

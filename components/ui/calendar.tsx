@@ -83,11 +83,14 @@ function Calendar({
         week: cn('flex w-full mt-2', defaultClassNames.week),
         week_number_header: cn('select-none w-(--cell-size)', defaultClassNames.week_number_header),
         week_number: cn('text-[0.8rem] select-none text-muted-foreground', defaultClassNames.week_number),
-        day: cn('relative w-full h-full p-0 text-center group/day aspect-square select-none', defaultClassNames.day),
+        day: cn(
+          'relative w-full h-full p-0 grid place-items-center text-center group/day aspect-square select-none',
+          defaultClassNames.day
+        ),
         range_start: cn('rounded-l-md bg-accent', defaultClassNames.range_start),
         range_middle: cn('rounded-none', defaultClassNames.range_middle),
         range_end: cn('rounded-r-md bg-accent', defaultClassNames.range_end),
-        today: cn('text-accent-foreground rounded-full bg-[#4E3CDB] text-white', defaultClassNames.today),
+        today: cn('text-accent-foreground rounded-full *:bg-[#4E3CDB] text-white', defaultClassNames.today),
         outside: cn('text-muted-foreground aria-selected:text-muted-foreground', defaultClassNames.outside),
         disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
         hidden: cn('invisible', defaultClassNames.hidden),

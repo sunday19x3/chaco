@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import Header from './components/header'
 import BottomNavigation from './components/bottom-navigation'
-
+import 'mapbox-gl/dist/mapbox-gl.css'
 export default function PrivateLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
@@ -35,7 +35,7 @@ export default function PrivateLayout({ children }: { children: React.ReactNode 
 
   // User is authenticated, render the private page content
   return (
-    <div className='min-h-screen relative'>
+    <div className='min-h-screen relative pb-20'>
       <Header />
       {children}
       <BottomNavigation />

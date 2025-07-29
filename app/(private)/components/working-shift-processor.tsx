@@ -1,22 +1,16 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { checkin, getAttendanceStatus } from '@/services/attendance'
-import { CheckCircle, ScanFace, TriangleAlert, X } from 'lucide-react'
-import moment from 'moment'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useAuth } from '@/contexts/AuthContext'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
+import { checkin, checkout, getAttendanceStatus, getWorkingData } from '@/services/attendance'
+import { getBrowserInfo, getDeviceType } from '@/utils/deviceDetection'
+import { CheckCircle, Clock, MapPin, ScanFace, TriangleAlert, X } from 'lucide-react'
+import moment from 'moment'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { getBrowserInfo, getDeviceType, getOSInfo } from '@/utils/deviceDetection'
+import useSWR from 'swr'
 // Vietnamese day names mapping
 const vietnameseDays = {
   0: 'Chủ Nhật',
@@ -29,6 +23,7 @@ const vietnameseDays = {
 }
 
 export default function WorkingShiftProcessor() {
+  const { workingData } = useAuth()
   const [tab, setTab] = useState<'gps' | 'wifi'>('gps')
   const [currentTime, setCurrentTime] = useState(moment())
   const [open, setOpen] = useState(false)
@@ -190,20 +185,37 @@ export default function WorkingShiftProcessor() {
     }
     try {
       setLoading(true)
-      await checkin(
-        user?.employeeId!,
-        capturedImage!,
-        {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          accuracy: location.coords.accuracy,
-        },
-        {
-          deviceType: getDeviceType(),
-          deviceId: getBrowserInfo().engine,
-          appVersion: getBrowserInfo().version,
-        }
-      )
+      if (attendanceStatus?.currentStatus === 'not_started') {
+        await checkin(
+          user?.employeeId!,
+          capturedImage!,
+          {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            accuracy: location.coords.accuracy,
+          },
+          {
+            deviceType: getDeviceType(),
+            deviceId: getBrowserInfo().engine,
+            appVersion: getBrowserInfo().version,
+          }
+        )
+      } else {
+        await checkout(
+          user?.employeeId!,
+          capturedImage!,
+          {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            accuracy: location.coords.accuracy,
+          },
+          {
+            deviceType: getDeviceType(),
+            deviceId: getBrowserInfo().engine,
+            appVersion: getBrowserInfo().version,
+          }
+        )
+      }
     } catch (error) {
       console.error(error)
       toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
@@ -233,7 +245,35 @@ export default function WorkingShiftProcessor() {
   }, [open, startCamera, stopCamera, requestLocation])
 
   return (
-    <div>
+    <>
+      {/* Work Shift Information Card */}
+      {workingData && (
+        <div className='bg-[#F3F1FF] rounded-2xl p-4'>
+          <h3 className='text-sm font-semibold mb-3 text-gray-900'>Thông tin ca làm việc</h3>
+
+          <div className='space-y-2 text-sm'>
+            {/* Shift Time */}
+            <div className='flex items-center gap-3'>
+              <Clock className='w-5 h-5 text-[#B2A9FF] mt-0.5' />
+              <div>
+                <p className='font-medium text-gray-900'>
+                  Cả ngày <span className='text-xs text-gray-400'>•</span> {workingData.defaultSchedule.startTime} -{' '}
+                  {workingData.defaultSchedule.endTime}
+                </p>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className='flex items-center gap-3'>
+              <MapPin className='w-5 h-5 text-[#B2A9FF] mt-0.5' />
+              <div>
+                <p className='font-medium text-gray-900'>{workingData.allowedLocations[0].name}</p>
+                <p className='text-xs text-gray-400'>Khu công nghiệp Quế Võ, Nam Sơn, Bắc Ninh</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className='flex items-end'>
         <div
           onClick={() => setTab('gps')}
@@ -260,7 +300,13 @@ export default function WorkingShiftProcessor() {
         <div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className='w-full' disabled={loading}>
+              <Button
+                className='w-full'
+                disabled={
+                  loading ||
+                  (attendanceStatus?.currentStatus !== 'not_started' &&
+                    attendanceStatus?.currentStatus !== 'in_progress')
+                }>
                 {loading
                   ? 'Đang xử lý...'
                   : attendanceStatus?.currentStatus === 'not_started'
@@ -368,6 +414,6 @@ export default function WorkingShiftProcessor() {
           </Button>
         </div>
       </div>
-    </div>
+    </>
   )
 }

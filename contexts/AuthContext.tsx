@@ -5,11 +5,15 @@ import { User } from '@/models/user'
 import { login as loginService, getCurrentUser as getCurrentUserService } from '@/services/auth'
 import { getDeviceInfo } from '@/utils/deviceDetection'
 import { toast } from 'sonner'
+import useSWR from 'swr'
+import { getWorkingData } from '@/services/attendance'
+import { WorkingData } from '@/models/user'
 interface AuthContextType {
   user: User | null
   login: (username: string, password: string) => Promise<void>
   logout: () => void
   isLoading: boolean
+  workingData?: WorkingData
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -19,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
+  const { data: workingData } = useSWR('get-working-data', getWorkingData)
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true)
@@ -69,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, workingData }}>
       {isInitialized ? children : null}
     </AuthContext.Provider>
   )
