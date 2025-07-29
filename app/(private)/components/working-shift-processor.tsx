@@ -31,7 +31,7 @@ export default function WorkingShiftProcessor() {
   const [location, setLocation] = useState<GeolocationPosition | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<{
     employeeId: string
-    currentStatus: 'not_started' | 'checked_in' | 'checked_out'
+    currentStatus: 'not_checked_in' | 'checked_in' | 'checked_out'
     todayAttendance:
       | {
           totalHours: number
@@ -80,7 +80,7 @@ export default function WorkingShiftProcessor() {
   }
 
   // Location functions
-  const requestLocation = useCallback(async () => {
+  const requestLocationAndCamera = useCallback(async () => {
     try {
       // Check if geolocation is supported
       if (!navigator.geolocation) {
@@ -96,21 +96,13 @@ export default function WorkingShiftProcessor() {
           maximumAge: 60000,
         })
       })
-
       setLocation(position)
+      startCamera()
+      setCapturedImage(null)
+      setOpen(true)
     } catch (err: any) {
       console.error('Error getting location:', err)
-      let errorMessage = 'Unable to get location.'
-
-      if (err.code === 1) {
-        errorMessage = 'Location access denied. Please enable location permissions.'
-      } else if (err.code === 2) {
-        errorMessage = 'Location unavailable. Please check your GPS settings.'
-      } else if (err.code === 3) {
-        errorMessage = 'Location request timed out. Please try again.'
-      }
-
-      toast.error(errorMessage)
+      alert(`Geolocation Error: Code ${err.code} - ${err.message}`)
     }
   }, [])
 
@@ -185,7 +177,7 @@ export default function WorkingShiftProcessor() {
     }
     try {
       setLoading(true)
-      if (attendanceStatus?.currentStatus === 'not_started') {
+      if (attendanceStatus?.currentStatus === 'not_checked_in') {
         await checkin(
           user?.employeeId!,
           capturedImage!,
@@ -230,11 +222,7 @@ export default function WorkingShiftProcessor() {
 
   // Start camera and request location when dialog opens
   useEffect(() => {
-    if (open) {
-      startCamera()
-      setCapturedImage(null)
-      requestLocation()
-    } else {
+    if (!open) {
       stopCamera()
     }
 
@@ -242,7 +230,7 @@ export default function WorkingShiftProcessor() {
     return () => {
       stopCamera()
     }
-  }, [open, startCamera, stopCamera, requestLocation])
+  }, [open, stopCamera])
 
   return (
     <>
@@ -298,24 +286,22 @@ export default function WorkingShiftProcessor() {
           <div className='font-extrabold text-2xl'>{getCurrentTime()}</div>
         </div>
         <div>
+          <Button
+            onClick={requestLocationAndCamera}
+            className='w-full'
+            disabled={
+              loading ||
+              (attendanceStatus?.currentStatus !== 'not_checked_in' && attendanceStatus?.currentStatus !== 'checked_in')
+            }>
+            {loading
+              ? 'Đang xử lý...'
+              : attendanceStatus?.currentStatus === 'not_checked_in'
+              ? 'Vào làm'
+              : attendanceStatus?.currentStatus === 'checked_in'
+              ? 'Tan làm'
+              : 'Hết ca'}
+          </Button>
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className='w-full'
-                disabled={
-                  loading ||
-                  (attendanceStatus?.currentStatus !== 'not_started' &&
-                    attendanceStatus?.currentStatus !== 'checked_in')
-                }>
-                {loading
-                  ? 'Đang xử lý...'
-                  : attendanceStatus?.currentStatus === 'not_started'
-                  ? 'Vào làm'
-                  : attendanceStatus?.currentStatus === 'checked_in'
-                  ? 'Tan làm'
-                  : 'Hết ca'}
-              </Button>
-            </DialogTrigger>
             <DialogContent
               showCloseButton={false}
               className='p-0 !max-w-xl !w-screen !bg-[#404040] !rounded-none !border-none'>
@@ -385,7 +371,7 @@ export default function WorkingShiftProcessor() {
         </div>
         <div className='flex items-center gap-5 justify-between'>
           <div className='space-y-2 text-xs'>
-            {attendanceStatus?.currentStatus === 'not_started' ? (
+            {attendanceStatus?.currentStatus === 'not_checked_in' ? (
               <div className='flex items-center gap-2'>
                 <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-in
               </div>
