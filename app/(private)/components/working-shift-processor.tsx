@@ -208,6 +208,9 @@ export default function WorkingShiftProcessor() {
           }
         )
       }
+      await fetchAttendanceStatus()
+      toast.success('Thành công')
+      setOpen(false)
     } catch (error) {
       console.error(error)
       toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
@@ -262,138 +265,139 @@ export default function WorkingShiftProcessor() {
           </div>
         </div>
       )}
-      <div className='flex items-end'>
-        <div
-          onClick={() => setTab('gps')}
-          className={cn(
-            'w-[120px] grid cursor-pointer place-items-center text-sm font-semibold bg-white rounded-t-xl',
-            tab === 'gps' ? 'bg-white h-11' : 'bg-[#F3F3F3] h-9 text-[#959393]'
-          )}>
-          GPS
-        </div>
-        <div
-          onClick={() => setTab('wifi')}
-          className={cn(
-            'w-[120px] grid cursor-pointer place-items-center text-sm font-semibold bg-white rounded-t-xl',
-            tab === 'wifi' ? 'bg-white h-11' : 'bg-[#F3F3F3] h-9 text-[#959393]'
-          )}>
-          WiFi
-        </div>
-      </div>
-      <div className='p-4 bg-white rounded-b-xl space-y-5'>
-        <div className='flex items-center w-full flex-col gap-3 justify-between'>
-          <div className='text-sm font-medium'>{getCurrentDateVietnamese()}</div>
-          <div className='font-extrabold text-2xl'>{getCurrentTime()}</div>
-        </div>
-        <div>
-          <Button
-            onClick={requestLocationAndCamera}
-            className='w-full'
-            disabled={
-              loading ||
-              (attendanceStatus?.currentStatus !== 'not_checked_in' && attendanceStatus?.currentStatus !== 'checked_in')
-            }>
-            {loading
-              ? 'Đang xử lý...'
-              : attendanceStatus?.currentStatus === 'not_checked_in'
-              ? 'Vào làm'
-              : attendanceStatus?.currentStatus === 'checked_in'
-              ? 'Tan làm'
-              : 'Hết ca'}
-          </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent
-              showCloseButton={false}
-              className='p-0 !max-w-xl !w-screen !bg-[#404040] !rounded-none !border-none'>
-              <DialogHeader className='hidden'>
-                <DialogTitle>Chụp ảnh chấm công</DialogTitle>
-              </DialogHeader>
-              <div className='w-full h-[100dvh] flex items-center flex-col text-white pb-6'>
-                <header className='text-white  w-full h-12 flex items-center justify-center relative'>
-                  <h1 className=' font-medium'>Chụp ảnh chấm công</h1>
-                  <div onClick={() => setOpen(false)} className='absolute left-4 top-1/2 transform -translate-y-1/2'>
-                    <X />
-                  </div>
-                </header>
-                <div className='w-full text-center text-sm'>Vui lòng chụp rõ khuôn mặt</div>
-                <div className='px-6 py-3 flex-1 w-full'>
-                  <div className='w-full h-full bg-[#D9D9D9] rounded-lg relative overflow-hidden' id='live-preview'>
-                    {cameraError ? (
-                      <div className='flex flex-col items-center justify-center h-full text-red-500'>
-                        <X className='w-12 h-12 mb-2' />
-                        <p className='text-sm text-center px-4'>{cameraError}</p>
-                        <Button onClick={startCamera}>Thử lại</Button>
-                      </div>
-                    ) : capturedImage ? (
-                      <img src={capturedImage} alt='Captured photo' className='w-full h-full object-cover' />
-                    ) : (
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className='w-full h-full object-cover transform scale-x-[-1]'
-                      />
-                    )}
-
-                    {/* Loading indicator when starting camera */}
-                    {!isStreaming && !cameraError && !capturedImage && (
-                      <div className='absolute inset-0 flex items-center justify-center'>
-                        <div className='text-gray-600'>Đang mở camera...</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {capturedImage ? (
-                  <div className='flex gap-4'>
-                    <Button
-                      onClick={() => {
-                        setCapturedImage(null)
-                        startCamera()
-                      }}
-                      variant='outline'>
-                      Chụp lại
-                    </Button>
-                    <Button onClick={handler}>Xác nhận</Button>
-                  </div>
-                ) : (
-                  <button onClick={capturePhoto} disabled={!isStreaming} className='disabled:opacity-50'>
-                    <ScanFace className='text-[#B83E3E] w-11 animate-pulse h-11' />
-                  </button>
-                )}
-
-                {/* Hidden canvas for image capture */}
-                <canvas ref={canvasRef} className='hidden' />
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <div className='flex items-center gap-5 justify-between'>
-          <div className='space-y-2 text-xs'>
-            {attendanceStatus?.currentStatus === 'not_checked_in' ? (
-              <div className='flex items-center gap-2'>
-                <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-in
-              </div>
-            ) : (
-              <div className='flex items-center gap-2'>
-                <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-in thành công
-              </div>
-            )}
-            {attendanceStatus?.currentStatus === 'checked_out' ? (
-              <div className='flex items-center gap-2'>
-                <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-out thành công
-              </div>
-            ) : (
-              <div className='flex items-center gap-2'>
-                <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-out
-              </div>
-            )}
+      <div>
+        <div className='flex items-end'>
+          <div
+            onClick={() => setTab('gps')}
+            className={cn(
+              'w-[120px] grid cursor-pointer place-items-center text-sm font-semibold bg-white rounded-t-xl',
+              tab === 'gps' ? 'bg-white h-11' : 'bg-[#F3F3F3] h-9 text-[#959393]'
+            )}>
+            GPS
           </div>
-          <Button variant='secondary' size='sm'>
-            Xin nghỉ
-          </Button>
+          <div
+            onClick={() => setTab('wifi')}
+            className={cn(
+              'w-[120px] grid cursor-pointer place-items-center text-sm font-semibold bg-white rounded-t-xl',
+              tab === 'wifi' ? 'bg-white h-11' : 'bg-[#F3F3F3] h-9 text-[#959393]'
+            )}>
+            WiFi
+          </div>
         </div>
+        <div className='p-4 bg-white rounded-b-xl space-y-5'>
+          <div className='flex items-center w-full flex-col gap-3 justify-between'>
+            <div className='text-sm font-medium'>{getCurrentDateVietnamese()}</div>
+            <div className='font-extrabold text-2xl'>{getCurrentTime()}</div>
+          </div>
+          <div>
+            {(attendanceStatus?.currentStatus === 'not_checked_in' ||
+              attendanceStatus?.currentStatus === 'checked_in') && (
+              <Button onClick={requestLocationAndCamera} className='w-full' disabled={loading}>
+                {loading
+                  ? 'Đang xử lý...'
+                  : attendanceStatus?.currentStatus === 'not_checked_in'
+                  ? 'Vào làm'
+                  : attendanceStatus?.currentStatus === 'checked_in'
+                  ? 'Tan làm'
+                  : attendanceStatus?.currentStatus}
+              </Button>
+            )}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogContent
+                showCloseButton={false}
+                className='p-0 !max-w-xl !w-screen !bg-[#404040] !rounded-none !border-none'>
+                <DialogHeader className='hidden'>
+                  <DialogTitle>Chụp ảnh chấm công</DialogTitle>
+                </DialogHeader>
+                <div className='w-full h-[100dvh] flex items-center flex-col text-white pb-6'>
+                  <header className='text-white  w-full h-12 flex items-center justify-center relative'>
+                    <h1 className=' font-medium'>Chụp ảnh chấm công</h1>
+                    <div onClick={() => setOpen(false)} className='absolute left-4 top-1/2 transform -translate-y-1/2'>
+                      <X />
+                    </div>
+                  </header>
+                  <div className='w-full text-center text-sm'>Vui lòng chụp rõ khuôn mặt</div>
+                  <div className='px-6 py-3 flex-1 w-full'>
+                    <div className='w-full h-full bg-[#D9D9D9] rounded-lg relative overflow-hidden' id='live-preview'>
+                      {cameraError ? (
+                        <div className='flex flex-col items-center justify-center h-full text-red-500'>
+                          <X className='w-12 h-12 mb-2' />
+                          <p className='text-sm text-center px-4'>{cameraError}</p>
+                          <Button onClick={startCamera}>Thử lại</Button>
+                        </div>
+                      ) : capturedImage ? (
+                        <img src={capturedImage} alt='Captured photo' className='w-full h-full object-cover' />
+                      ) : (
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className='w-full h-full object-cover transform scale-x-[-1]'
+                        />
+                      )}
+
+                      {/* Loading indicator when starting camera */}
+                      {!isStreaming && !cameraError && !capturedImage && (
+                        <div className='absolute inset-0 flex items-center justify-center'>
+                          <div className='text-gray-600'>Đang mở camera...</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {capturedImage ? (
+                    <div className='flex gap-4'>
+                      <Button
+                        onClick={() => {
+                          setCapturedImage(null)
+                          startCamera()
+                        }}
+                        variant='outline'>
+                        Chụp lại
+                      </Button>
+                      <Button onClick={handler}>Xác nhận</Button>
+                    </div>
+                  ) : (
+                    <button onClick={capturePhoto} disabled={!isStreaming} className='disabled:opacity-50'>
+                      <ScanFace className='text-[#B83E3E] w-11 animate-pulse h-11' />
+                    </button>
+                  )}
+
+                  {/* Hidden canvas for image capture */}
+                  <canvas ref={canvasRef} className='hidden' />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+        {attendanceStatus && (
+          <div className='flex items-center gap-5 justify-between'>
+            <div className='space-y-2 text-xs'>
+              {attendanceStatus?.currentStatus === 'not_checked_in' ? (
+                <div className='flex items-center gap-2'>
+                  <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-in
+                </div>
+              ) : (
+                <div className='flex items-center gap-2'>
+                  <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-in thành công
+                </div>
+              )}
+              {attendanceStatus?.currentStatus === 'checked_out' ? (
+                <div className='flex items-center gap-2'>
+                  <CheckCircle className='w-4 h-4 text-[#00C60A]' /> Bạn đã check-out thành công
+                </div>
+              ) : (
+                <div className='flex items-center gap-2'>
+                  <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-out
+                </div>
+              )}
+            </div>
+            <Button variant='secondary' size='sm'>
+              Xin nghỉ
+            </Button>
+          </div>
+        )}
       </div>
     </>
   )

@@ -2,7 +2,7 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel'
 export default function IncomingWorkingShift() {
   return (
-    <div className='space-y-3'>
+    <div className='space-y-3 mt-4'>
       <div className='text-sm font-semibold px-4'>Ca làm sắp tới</div>
       <div>
         <Carousel

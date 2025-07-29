@@ -2,7 +2,7 @@
 
 import { Calendar } from '@/components/ui/calendar'
 import { useAuth } from '@/contexts/AuthContext'
-import { cn } from '@/lib/utils'
+import { cn, getImageUrl } from '@/lib/utils'
 import { getAttendanceHistory } from '@/services/attendance'
 import { vi } from 'date-fns/locale'
 import { CircleAlert, CircleCheck } from 'lucide-react'
@@ -142,7 +142,7 @@ export default function AttendanceHistory() {
                     <div className='grid grid-cols-2 gap-2'>
                       <div className='w-full aspect-square bg-[#FAF9F9] rounded-lg overflow-hidden'>
                         <Image
-                          src={item.photoUrl || ''}
+                          src={getImageUrl(item.photoUrl || '')}
                           alt='checkin'
                           width={1000}
                           height={1000}
@@ -182,7 +182,7 @@ export default function AttendanceHistory() {
                     <div className='grid grid-cols-2 gap-2'>
                       <div className='w-full aspect-square bg-[#FAF9F9] rounded-lg overflow-hidden'>
                         <Image
-                          src={item.photoUrl || ''}
+                          src={getImageUrl(item.photoUrl || '')}
                           alt='checkout'
                           width={1000}
                           height={1000}
