@@ -7,9 +7,10 @@ import { getAttendanceHistory } from '@/services/attendance'
 import { vi } from 'date-fns/locale'
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import moment from 'moment'
-import Image from 'next/image'
+import Image, { ImageProps } from 'next/image'
 import { useEffect, useState } from 'react'
 import Mapbox from './components/mapbox'
+import getImage from '@/services/image'
 export default function AttendanceHistory() {
   const [date, setDate] = useState<Date | undefined>(moment().toDate())
   const [month, setMonth] = useState(moment().toDate())
@@ -141,7 +142,7 @@ export default function AttendanceHistory() {
                     </div>
                     <div className='grid grid-cols-2 gap-2'>
                       <div className='w-full aspect-square bg-[#FAF9F9] rounded-lg overflow-hidden'>
-                        <Image
+                        <SelfieImage
                           src={getImageUrl(item.photoUrl || '')}
                           alt='checkin'
                           width={1000}
@@ -181,7 +182,7 @@ export default function AttendanceHistory() {
                     </div>
                     <div className='grid grid-cols-2 gap-2'>
                       <div className='w-full aspect-square bg-[#FAF9F9] rounded-lg overflow-hidden'>
-                        <Image
+                        <SelfieImage
                           src={getImageUrl(item.photoUrl || '')}
                           alt='checkout'
                           width={1000}
@@ -207,4 +208,15 @@ export default function AttendanceHistory() {
       </div>
     </div>
   )
+}
+const SelfieImage = (props: ImageProps) => {
+  const [data, setData] = useState<string | null>(null)
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getImage(props.src as string)
+      setData(response.data)
+    }
+    fetchData()
+  }, [props.src])
+  return <Image {...props} src={data || ''} className='w-full h-full object-cover' unoptimized />
 }

@@ -38,9 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('refresh-token', loginData.tokens.refreshToken)
         setUser(loginData.user)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      toast.error('Đăng nhập thất bại. Vui lòng thử lại.')
+      toast.error(error?.message || 'Đăng nhập thất bại. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
     }

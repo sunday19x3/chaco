@@ -31,7 +31,7 @@ export default function WorkingShiftProcessor() {
   const [location, setLocation] = useState<GeolocationPosition | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<{
     employeeId: string
-    currentStatus: 'not_checked_in' | 'checked_in' | 'checked_out'
+    currentStatus: 'not_started' | 'checked_in' | 'checked_out'
     todayAttendance:
       | {
           totalHours: number
@@ -177,7 +177,7 @@ export default function WorkingShiftProcessor() {
     }
     try {
       setLoading(true)
-      if (attendanceStatus?.currentStatus === 'not_checked_in') {
+      if (attendanceStatus?.currentStatus === 'not_started') {
         await checkin(
           user?.employeeId!,
           capturedImage!,
@@ -211,9 +211,9 @@ export default function WorkingShiftProcessor() {
       await fetchAttendanceStatus()
       toast.success('Thành công')
       setOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
+      toast.error(error?.message || 'Đã xảy ra lỗi. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
@@ -290,12 +290,12 @@ export default function WorkingShiftProcessor() {
             <div className='font-extrabold text-2xl'>{getCurrentTime()}</div>
           </div>
           <div>
-            {(attendanceStatus?.currentStatus === 'not_checked_in' ||
+            {(attendanceStatus?.currentStatus === 'not_started' ||
               attendanceStatus?.currentStatus === 'checked_in') && (
               <Button onClick={requestLocationAndCamera} className='w-full' disabled={loading}>
                 {loading
                   ? 'Đang xử lý...'
-                  : attendanceStatus?.currentStatus === 'not_checked_in'
+                  : attendanceStatus?.currentStatus === 'not_started'
                   ? 'Vào làm'
                   : attendanceStatus?.currentStatus === 'checked_in'
                   ? 'Tan làm'
@@ -374,7 +374,7 @@ export default function WorkingShiftProcessor() {
         {attendanceStatus && (
           <div className='flex items-center gap-5 justify-between'>
             <div className='space-y-2 text-xs'>
-              {attendanceStatus?.currentStatus === 'not_checked_in' ? (
+              {attendanceStatus?.currentStatus === 'not_started' ? (
                 <div className='flex items-center gap-2'>
                   <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-in
                 </div>
