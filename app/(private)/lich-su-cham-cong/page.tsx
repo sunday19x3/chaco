@@ -53,7 +53,6 @@ export default function AttendanceHistory() {
   const selectedDateAttendance = attendanceHistory.filter((item) =>
     moment(item.timestamp).startOf('day').isSame(moment(date).startOf('day'))
   )
-  console.log(selectedDateAttendance)
   return (
     <div>
       <div className='space-y-4 bg-white py-4'>
@@ -214,7 +213,8 @@ const SelfieImage = (props: ImageProps) => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await getImage(props.src as string)
-      setData(response.data)
+      const data = response.data
+      setData(data)
     }
     if (!props.src) return
     fetchData()
