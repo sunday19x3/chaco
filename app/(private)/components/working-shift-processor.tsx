@@ -1,16 +1,15 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
-import { checkin, checkout, getAttendanceStatus, getWorkingData } from '@/services/attendance'
+import { checkin, checkout, getAttendanceStatus } from '@/services/attendance'
 import { getBrowserInfo, getDeviceType } from '@/utils/deviceDetection'
 import { CheckCircle, Clock, MapPin, ScanFace, TriangleAlert, X } from 'lucide-react'
 import moment from 'moment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import useSWR from 'swr'
 // Vietnamese day names mapping
 const vietnameseDays = {
   0: 'Chủ Nhật',
@@ -31,7 +30,7 @@ export default function WorkingShiftProcessor() {
   const [location, setLocation] = useState<GeolocationPosition | null>(null)
   const [attendanceStatus, setAttendanceStatus] = useState<{
     employeeId: string
-    currentStatus: 'not_started' | 'checked_in' | 'checked_out'
+    currentStatus: 'not_checked_in' | 'checked_in' | 'checked_out' | 'not_checked_out'
     todayAttendance:
       | {
           totalHours: number
@@ -177,7 +176,7 @@ export default function WorkingShiftProcessor() {
     }
     try {
       setLoading(true)
-      if (attendanceStatus?.currentStatus === 'not_started') {
+      if (attendanceStatus?.currentStatus === 'not_checked_in') {
         await checkin(
           user?.employeeId!,
           capturedImage!,
@@ -290,12 +289,12 @@ export default function WorkingShiftProcessor() {
             <div className='font-extrabold text-2xl'>{getCurrentTime()}</div>
           </div>
           <div>
-            {(attendanceStatus?.currentStatus === 'not_started' ||
+            {(attendanceStatus?.currentStatus === 'not_checked_in' ||
               attendanceStatus?.currentStatus === 'checked_in') && (
               <Button onClick={requestLocationAndCamera} className='w-full' disabled={loading}>
                 {loading
                   ? 'Đang xử lý...'
-                  : attendanceStatus?.currentStatus === 'not_started'
+                  : attendanceStatus?.currentStatus === 'not_checked_in'
                   ? 'Vào làm'
                   : attendanceStatus?.currentStatus === 'checked_in'
                   ? 'Tan làm'
@@ -374,7 +373,7 @@ export default function WorkingShiftProcessor() {
         {attendanceStatus && (
           <div className='flex items-center gap-5 justify-between'>
             <div className='space-y-2 text-xs'>
-              {attendanceStatus?.currentStatus === 'not_started' ? (
+              {attendanceStatus?.currentStatus === 'not_checked_in' ? (
                 <div className='flex items-center gap-2'>
                   <TriangleAlert className='w-4 h-4 text-[#F7C604]' /> Bạn chưa check-in
                 </div>

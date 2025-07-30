@@ -216,7 +216,9 @@ const SelfieImage = (props: ImageProps) => {
       const response = await getImage(props.src as string)
       setData(response.data)
     }
+    if (!props.src) return
     fetchData()
   }, [props.src])
+  if (!data) return <div className='w-full h-full bg-Text-text-negative'></div>
   return <Image {...props} src={data || ''} className='w-full h-full object-cover' unoptimized />
 }
